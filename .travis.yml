@@ -12,6 +12,7 @@ before_script:
   - npm prune
 script:
   - npm test
+  - npm coverage
 after_success:
   - npm run semantic-release
 branches:

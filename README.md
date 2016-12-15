@@ -1,6 +1,8 @@
 # axios-cancel
 
-Simplify cancellation of http requests when using the awesome axios library
+[![travis build](https://img.shields.io/travis/thaerlabs/axios-cancel/master.svg?style=flat-square)](https://travis-ci.org/thaerlabs/axios-cancel)
+
+Simplify cancellation of http requests when using the awesome [axios](https://github.com/mzabriskie/axios) library
 
 ## Installation
 
