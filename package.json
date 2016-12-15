@@ -1,0 +1,32 @@
+{
+  "name": "axios-cancel",
+  "version": "0.1.0",
+  "description": "Simplify cancellation of http requests when using the awesome axios library",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel index.js --out-dir dist",
+    "test": "jest"
+  },
+  "keywords": [
+    "axios",
+    "http",
+    "cancel",
+    "promise"
+  ],
+  "author": "Thaer Abbas <abbas.t249@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "0.15.2",
+    "axios-mock-adapter": "1.7.1",
+    "babel-cli": "6.18.0",
+    "babel-plugin-transform-es2015-modules-umd": "6.18.0",
+    "babel-preset-es2015": "6.18.0",
+    "jest": "16.0.2"
+  },
+  "peerDependencies": {
+    "axios": ">= 1.5.0"
+  },
+  "jest": {
+    "verbose": true
+  }
+}
