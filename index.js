@@ -42,7 +42,7 @@ export default function patchAxios(axios, options) {
     if (requestId) {
       requestManager.removeRequest(requestId);
     }
-    if (requestGroup && requestGroupIndex) {
+    if (requestGroup && typeof requestGroupIndex !== 'undefined') {
       requestManager.removeGroupRequest(requestGroup, requestGroupIndex);
     }
     return response;
