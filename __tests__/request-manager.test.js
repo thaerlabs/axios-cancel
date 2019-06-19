@@ -2,55 +2,61 @@ import RequestManager from '../lib/RequestManager';
 
 describe('RequestManager', () => {
   let requestManager;
+  const requestId = 'REQUEST_ID'
+  const requestGroup = 'REQUEST_GROUP'
 
   beforeEach(() => {
     requestManager = new RequestManager();
   });
 
   test('adds a request', () => {
-    const reqId = 'request_id';
+    requestManager.addRequest({requestId});
 
-    requestManager.addRequest(reqId, () => { });
-    expect(requestManager.has(reqId)).toBeTruthy();
+    expect(requestManager.has(requestId)).toBeTruthy();
   });
 
   test('removes a request', () => {
-    const reqId = 'request_id';
 
-    requestManager.addRequest(reqId, () => { });
-    expect(requestManager.has(reqId)).toBeTruthy();
-    
-    requestManager.removeRequest(reqId);
-    expect(requestManager.has(reqId)).toBeFalsy();
+    requestManager.addRequest({requestId});
+    expect(requestManager.has(requestId)).toBeTruthy();
+
+    requestManager.removeRequest(requestId);
+    expect(requestManager.has(requestId)).toBeFalsy();
   });
 
-  test('cancels a request', () => {
+  test('cancels a request with `requestId`', () => {
     const cancelFn = jest.fn();
-    const reqId = 'request_id';
 
-    requestManager.addRequest(reqId, cancelFn);
-    requestManager.cancelRequest(reqId);
+    requestManager.addRequest({requestId, cancel: cancelFn});
+    requestManager.cancelRequest(requestId);
     expect(cancelFn).toHaveBeenCalled();
-    expect(requestManager.has(reqId)).toBeFalsy();
+    expect(requestManager.has(requestId)).toBeFalsy();
+  });
+
+  test('cancels a request with `requestGroup`', () => {
+    const cancelFn = jest.fn();
+
+    requestManager.addRequest({requestGroup, cancel: cancelFn});
+    requestManager.cancelRequest(requestGroup);
+    expect(cancelFn).toHaveBeenCalled();
+    expect(requestManager.has(requestGroup)).toBeFalsy();
   });
 
   test('cancels a request with default `reason` message', () => {
     const cancelFn = jest.fn();
-    const reqId = 'request_id';
-    const reason = `\`cancelRequest(${reqId})\` from \`RequestManager.cancelRequest\``;
+    const reason = `\`cancelRequest(${requestId})\` from \`RequestManager.cancelRequest\``;
 
-    requestManager.addRequest(reqId, cancelFn);
-    requestManager.cancelRequest(reqId);
+    requestManager.addRequest({requestId, cancel: cancelFn});
+    requestManager.cancelRequest(requestId);
     expect(cancelFn).toHaveBeenCalledWith(reason);
   });
 
   test('cancels a request with custom `reason` message', () => {
     const cancelFn = jest.fn();
-    const reqId = 'request_id';
     const reason = `some reason`;
 
-    requestManager.addRequest(reqId, cancelFn);
-    requestManager.cancelRequest(reqId, reason);
+    requestManager.addRequest({requestId, cancel: cancelFn});
+    requestManager.cancelRequest(requestId, reason);
     expect(cancelFn).toHaveBeenCalledWith(reason);
   });
 
@@ -58,13 +64,12 @@ describe('RequestManager', () => {
   test('cancels the precedent request if same `requestId` is sent before removal', () => {
     const cancelFn1 = jest.fn();
     const cancelFn2 = jest.fn();
-    const reqId = 'request_id';
 
-    requestManager.addRequest(reqId, cancelFn1);
-    requestManager.addRequest(reqId, cancelFn2);
+    requestManager.addRequest({ requestId, cancel: cancelFn1 });
+    requestManager.addRequest({ requestId, cancel: cancelFn2 });
     expect(cancelFn1).toHaveBeenCalled();
 
-    requestManager.cancelRequest(reqId);
+    requestManager.cancelRequest(requestId);
     expect(cancelFn2).toHaveBeenCalled();
   });
 
@@ -72,18 +77,18 @@ describe('RequestManager', () => {
     const cancelFn1 = jest.fn();
     const cancelFn2 = jest.fn();
     const cancelFn3 = jest.fn();
-    const reqId1 = 'request_id_1';
-    const reqId2 = 'request_id_2';
-    const reqId3 = 'request_id_3';
+    const reqId1 = 'REQUEST_ID_1';
+    const reqId2 = 'REQUEST_ID_2';
+    const reqId3 = 'REQUEST_ID_3';
 
-    requestManager.addRequest(reqId1, cancelFn1);
-    requestManager.addRequest(reqId2, cancelFn2);
-    requestManager.addRequest(reqId3, cancelFn3);
-    
+    requestManager.addRequest({ requestId: reqId1, cancel: cancelFn1 });
+    requestManager.addRequest({ requestId: reqId2, cancel: cancelFn2 });
+    requestManager.addRequest({ requestId: reqId3, cancel: cancelFn3 });
+
     requestManager.cancelAllRequests();
 
-    expect(cancelFn1).toHaveBeenCalled();
-    expect(cancelFn2).toHaveBeenCalled();
-    expect(cancelFn3).toHaveBeenCalled();
+    expect(cancelFn1).toHaveBeenCalledWith(`\`cancelRequest(${reqId1})\` from \`RequestManager.cancelAllRequests\``);
+    //expect(cancelFn2).toHaveBeenCalledWith(`\`cancelRequest(${reqId2})\` from \`RequestManager.cancelAllRequests\``);
+    expect(cancelFn3).toHaveBeenCalledWith(`\`cancelRequest(${reqId3})\` from \`RequestManager.cancelAllRequests\``);
   });
 });

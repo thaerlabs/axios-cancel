@@ -28,11 +28,11 @@ describe('axios cancel', () => {
       });
   });
 
-  test('request with requestId', () => {
+  test('request with `requestId`', () => {
 
     const requestId = 'request_id';
     return axios.get(url, {
-      requestId: requestId
+      requestId
     })
       .then((res) => {
         const {data} = res;
@@ -42,7 +42,21 @@ describe('axios cancel', () => {
       });
   });
 
-  test('cancel a single request with requestId', () => {
+  test('request with `requestGroup`', () => {
+
+    const requestGroup = 'request_group';
+    return axios.get(url, {
+      requestGroup
+    })
+      .then((res) => {
+        const {data} = res;
+        expect(data.users).toBeTruthy();
+      }).catch((thrown) => {
+        expect(thrown).toBeNull();
+      });
+  });
+
+  test('cancel a single request with `requestId`', () => {
 
     const successCallback = jest.fn();
     const cancelCallback = jest.fn();
@@ -63,7 +77,41 @@ describe('axios cancel', () => {
     return promise;
   });
 
-  test('validate that cancellation err is of type axios.Cancel', () => {
+  test('cancel group of requests with `requestGroup`', () => {
+
+    const successCallback1 = jest.fn();
+    const cancelCallback1 = jest.fn();
+
+    const successCallback2 = jest.fn();
+    const cancelCallback2 = jest.fn();
+
+    const requestGroup = 'request_group';
+
+    axios.get(url, {
+      requestGroup
+    })
+      .then(successCallback1)
+      .catch(cancelCallback1);
+
+    const promise = axios.get(url, {
+      requestGroup
+    })
+      .then(successCallback2)
+      .catch(cancelCallback2);
+
+    setTimeout(() => {
+      axios.cancel(requestGroup);
+      expect(successCallback1).not.toHaveBeenCalled();
+      expect(cancelCallback1).toHaveBeenCalled();
+
+      expect(successCallback2).not.toHaveBeenCalled();
+      expect(cancelCallback2).toHaveBeenCalled();
+    }, 100);
+
+    return promise;
+  });
+
+  test('validate that cancellation err is of type `axios.Cancel`', () => {
     const requestId = 'request_id';
     const promise = axios.get(url, {
       requestId: requestId
@@ -110,18 +158,52 @@ describe('axios cancel', () => {
     return promise;
   });
 
+  test('do not cancel a request with subsequent requests with same `requestGroup`', () => {
+
+    const successCallback1 = jest.fn();
+    const successCallback2 = jest.fn();
+    const cancelCallback1 = jest.fn();
+    const cancelCallback2 = jest.fn();
+
+    const requestGroup = 'request_group';
+    axios.get(url, {
+      requestGroup
+    })
+      .then(successCallback1)
+      .catch(cancelCallback1);
+
+    const promise = axios.get(url, {
+      requestGroup
+    })
+      .then(successCallback2)
+      .catch(cancelCallback2);
+
+    setTimeout(() => {
+      expect(successCallback1).toHaveBeenCalled();
+      expect(cancelCallback1).not().toHaveBeenCalled();
+
+      expect(successCallback2).toHaveBeenCalled();
+      expect(cancelCallback2).not().toHaveBeenCalled();
+    }, 100);
+
+    return promise;
+  });
+
   test('cancel all requests', () => {
 
     const successCallback1 = jest.fn();
     const successCallback2 = jest.fn();
     const successCallback3 = jest.fn();
+    const successCallback4 = jest.fn();
     const cancelCallback1 = jest.fn();
     const cancelCallback2 = jest.fn();
     const cancelCallback3 = jest.fn();
+    const cancelCallback4 = jest.fn();
 
     const requestId1 = 'request_id_1';
     const requestId2 = 'request_id_2';
     const requestId3 = 'request_id_3';
+    const requestGroup = 'request_group'
 
     axios.get(url, {
       requestId: requestId1
@@ -135,11 +217,17 @@ describe('axios cancel', () => {
       .then(successCallback2)
       .catch(cancelCallback2);
 
-    const promise = axios.get(url, {
+    axios.get(url, {
       requestId: requestId3
     })
       .then(successCallback3)
       .catch(cancelCallback3);
+
+    const promise = axios.get(url, {
+      requestGroup
+    })
+      .then(successCallback4)
+      .catch(cancelCallback4);
 
     setTimeout(() => {
 
@@ -153,6 +241,9 @@ describe('axios cancel', () => {
 
       expect(successCallback3).not.toHaveBeenCalled();
       expect(cancelCallback3).toHaveBeenCalled();
+
+      expect(successCallback4).not.toHaveBeenCalled();
+      expect(cancelCallback4).toHaveBeenCalled();
     }, 100);
 
     return promise;
