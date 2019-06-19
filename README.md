@@ -85,7 +85,45 @@ const promise2 = axios.get(url, {
 // logs `resolved promise 2`
 ```
 
-Multiple requests with different `requestId`, cancell all
+Multiple requests with same `requestGroup`, cancel all
+```javascript
+...
+
+const requestGroup = 'my_sample_request_group_1';
+const promise1 = axios.get(url, {
+  requestGroup: requestGroup
+})
+  .then((res) => {
+    console.log('resolved promise 1');
+  }).catch((thrown) => {
+    if (axios.isCancel(thrown)) {
+      console.log('request 1 cancelled');
+    } else {
+      console.log('some other reason');
+    }
+  });
+
+const promise2 = axios.get(url, {
+  requestGroup: requestGroup
+})
+  .then((res) => {
+    console.log('resolved promise 2');
+  }).catch((thrown) => {
+    if (axios.isCancel(thrown)) {
+      console.log('request 2 cancelled');
+    } else {
+      console.log('some other reason');
+    }
+  });
+
+axios.cancel(requestGroup);
+
+// aborts all HTTP requests with same `requestGroup`, and cancels all promises
+// logs `request 1 cancelled`
+// logs `request 2 cancelled`
+```
+
+Multiple requests with different `requestId`, cancel all
 ```javascript
 ...
 
@@ -108,7 +146,7 @@ const promise2 = axios.get(url, {
   requestId: requestId2
 })
   .then((res) => {
-    console.log('resolved promise 1');
+    console.log('resolved promise 2');
   }).catch((thrown) => {
     if (axios.isCancel(thrown)) {
       console.log('request 2 cancelled');
@@ -132,7 +170,7 @@ axios.cancelAll();
 *options*
 - debug _(enables logging)_
 
-*axios.cancel(requestId: string[, reason: string])*
+*axios.cancel(requestId[requestGroup]: string[, reason: string])*
 
 *axios.cancelAll([reason: string])*
 

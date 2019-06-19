@@ -32,5 +32,8 @@
   },
   "jest": {
     "verbose": true
+  },
+  "dependencies": {
+    "uuidv4": "^4.0.0"
   }
 }
