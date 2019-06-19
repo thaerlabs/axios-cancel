@@ -180,10 +180,10 @@ describe('axios cancel', () => {
 
     setTimeout(() => {
       expect(successCallback1).toHaveBeenCalled();
-      expect(cancelCallback1).not().toHaveBeenCalled();
+      expect(cancelCallback1).not.toHaveBeenCalled();
 
       expect(successCallback2).toHaveBeenCalled();
-      expect(cancelCallback2).not().toHaveBeenCalled();
+      expect(cancelCallback2).not.toHaveBeenCalled();
     }, 100);
 
     return promise;
