@@ -1,6 +1,7 @@
 import { CancelToken } from 'axios';
 import RequestManager from './lib/RequestManager';
 import extend from './lib/extend';
+import uuid from 'uuidv4'
 
 export default function patchAxios(axios, options) {
 
@@ -15,21 +16,31 @@ export default function patchAxios(axios, options) {
    * Global request interceptor
    * Any request with a `requestId` key in the config will be:
    *  - cancelled if already sent
-   *  - added to the `pendingRequests` hash if not, with a cancel function
+   *  - added to the `pendingRequests` with a cancel function
+   * Any request with a `requestGroup` key in config will be:
+   *  - added to the `pendingRequests` with a generated requestId and cancel function
    */
   axios.interceptors.request.use((config) => {
-    const { requestId } = config;
-    if (requestId) {
-      const source = CancelToken.source();
-      config.cancelToken = source.token;
-      requestManager.addRequest(requestId, source.cancel);
+    const { requestId, requestGroup } = config;
+    const cancelableId = requestId ? requestId : requestGroup ? uuid() : null
+
+    if (cancelableId) {
+      const { token, cancel } = CancelToken.source();
+      config.cancelToken = token;
+      config.requestId = cancelableId
+      if (requestGroup) {
+        requestManager.addRequest({ requestId: cancelableId, cancel, requestGroup })
+      } else {
+        requestManager.addRequest({ requestId: cancelableId, cancel })
+      }
     }
+
     return config;
   });
 
   /**
    * Global response interceptor
-   * Check for the `requestId` and remove it from the `pendingRequests` hash
+   * Check for the `requestId` or `requestGroup` and remove it from the `pendingRequests` hash (or it's `requestGroup` sub hash)
    */
   axios.interceptors.response.use((response) => {
     const { requestId } = response.config;
@@ -40,8 +51,8 @@ export default function patchAxios(axios, options) {
   });
 
   /**
-   * Global axios method to cancel a single request by ID
-   * @param requestId: string
+   * Global axios method to cancel a single request by ID or the whole group by it's name
+   * @param requestId: string Single request ID or group name
    * @param reason
    */
   axios.cancel = (requestId, reason) => {
